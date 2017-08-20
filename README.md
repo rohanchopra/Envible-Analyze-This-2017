@@ -1,2 +1,2 @@
-# Envible-VITVellore-AMAX-Analyzt-This-2017
+# Envible-VITVellore-AMAX-Analyze-This-2017
 Repo. for the Submission to Amax Analyse This Challenge 
