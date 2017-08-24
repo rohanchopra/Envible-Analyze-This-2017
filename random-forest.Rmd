@@ -8,6 +8,10 @@ output:
   word_document: default
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache=TRUE)
+```
+
 ```{r}
 setwd("~/coding/Envible-VITVellore-AMAX-Analyze-This-2017")
 ```
@@ -94,7 +98,7 @@ data <- data[, ! names(data) %in% c("mvar51"), drop = FALSE]
 
 Negative values in Retail spending
 
-```{r}
+```{r, eval=FALSE}
 data <- data[, ! names(data) %in% c("mvar32"), drop = FALSE]
 data <- data[, ! names(data) %in% c("mvar33"), drop = FALSE]
 data <- data[, ! names(data) %in% c("mvar34"), drop = FALSE]
@@ -150,7 +154,7 @@ head(data)
 ```
 
 
-```{r}
+```{r , echo=FALSE}
 library(h2o)
 h2o.init(nthreads=-1,max_mem_size="3g",enable_assertions=FALSE)
 ```
@@ -183,7 +187,7 @@ indexes = sample(1:nrow(data),size=0.2*nrow(data))
 test=data[indexes,]
 train=data[-indexes,]
 ```
-```{r}
+```{r, echo=FALSE}
 train.hex<-as.h2o(train)
 test.hex<-as.h2o(test)
 ```
@@ -201,7 +205,7 @@ test.hex<-as.h2o(test)
 # print(regression_model)
 ```
  
-```{r}
+```{r, echo=FALSE}
 regression_model_binary<-h2o.randomForest(
     training_frame =train.hex,
     validation_frame=test.hex,
@@ -212,8 +216,11 @@ regression_model_binary<-h2o.randomForest(
     balance_classes= T,
     binomial_double_trees = T,
     ntrees = 50)
+```
+```{r}
 print(regression_model_binary)
 ```
+
 ```{r}
 leader <- read.csv('Dataset/Leaderboard_Dataset.csv')
 ```
@@ -229,7 +236,7 @@ leader <- leader[, ! names(leader) %in% c("cm_key"), drop = FALSE]
 
 Dropping retail spending (Score decreased to 30400 from 31000)
 
-```{r}
+```{r, eval=FALSE}
 leader <- leader[, ! names(leader) %in% c("mvar32"), drop = FALSE]
 leader <- leader[, ! names(leader) %in% c("mvar33"), drop = FALSE]
 leader <- leader[, ! names(leader) %in% c("mvar34"), drop = FALSE]
@@ -301,10 +308,10 @@ predictions_binary <- as.data.frame(h2o.predict(regression_model_binary, leader.
 predictions_binary["cm_key"] <- cm_key
 ```
 ```{r}
-predictions_binary
+head(predictions_binary)
 ```
 ```{r}
-subset(predictions_binary, p1 > 0.236)
+dim(subset(predictions_binary, p1 > 0.236))
 ```
 
 ```{r}
@@ -329,16 +336,16 @@ submission <- subset(predictions_binary, predict == 1)
 ```
 ```{r}
 submission <- submission[1:1000,]
-submission
+head(submission)
 ```
 ```{r}
 submission$card <- rep("Supp",nrow(submission))
 submission <- submission[, ! names(submission) %in% c("predict"), drop = FALSE]
-submission
+head(submission)
 ```
 
 ```{r}
-    write.table(submission,file = "Envible_VITVellore_19.csv",sep = ",",row.names = FALSE, col.names = FALSE)
+    write.table(submission,file = "Envible_VITVellore_.csv",sep = ",",row.names = FALSE, col.names = FALSE)
 
 ```
 

@@ -107,7 +107,7 @@ library(caret)
 ```{r}
 set.seed(7)
 correlationMatrix <- cor(data)
-correlationMatrix
+head(correlationMatrix)
 ```
 
 Find attributes that are highly corrected (ideally >0.75)
@@ -126,7 +126,7 @@ control <- trainControl(method="repeatedcv", number=10, repeats=3)
 data$targetBin <- as.factor(data$targetBin)
 ```
 ```{r}
-data
+head(data)
 ```
 ```{r}
 data$targetBin <- as.factor(data$targetBin)
@@ -137,17 +137,17 @@ features <- data
 ```
 
 Train the model
-```{r}
+```{r, eval=FALSE}
 model <- train(x = features[,1:44], y = features$targetBin, method="rf", preProcess="scale", trControl=control)
 ```
 
 Estimate variable importance
-```{r}
+```{r, eval=FALSE}
 importance <- varImp(model, scale=FALSE)
 ```
 
 Summarize importance
-```{r}
+```{r, eval=FALSE}
 print(importance)
 plot(importance)
 ```
