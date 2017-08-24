@@ -91,6 +91,16 @@ data <- data[, ! names(data) %in% c("mvar49"), drop = FALSE]
 data <- data[, ! names(data) %in% c("mvar50"), drop = FALSE]
 data <- data[, ! names(data) %in% c("mvar51"), drop = FALSE]
 ```
+
+Negative values in Retail spending
+
+```{r}
+data <- data[, ! names(data) %in% c("mvar32"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar33"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar34"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar35"), drop = FALSE]
+```
+
 ```{r}
 head(data)
 ```
@@ -150,8 +160,8 @@ test.hex<-as.h2o(test)
 regression_model_binary<-h2o.randomForest(
     training_frame =train.hex,
     validation_frame=test.hex,
-    x = -c(2,45),
-    y=46,
+    x = -c(2,41),
+    y=42,
     nfolds=10,
     seed =100,
     balance_classes= T,
@@ -226,7 +236,7 @@ submission <- submission[1:1000,]
 submission
 ```
 ```{r}
-    write.table(submission,file = "Envible_VITVellore_14.csv",sep = ",",row.names = FALSE, col.names = FALSE)
+    write.table(submission,file = "Envible_VITVellore_15.csv",sep = ",",row.names = FALSE, col.names = FALSE)
 
 ```
 
