@@ -104,6 +104,51 @@ data <- data[, ! names(data) %in% c("mvar35"), drop = FALSE]
 ```{r}
 head(data)
 ```
+```{r}
+data['ElectronicsSpend'] = data['mvar16']+data['mvar17']+data['mvar18']+data['mvar19']
+data['TravelSpend'] = data['mvar20']+data['mvar21']+data['mvar22']+data['mvar23']
+data['HouseholdSpend'] = data['mvar27']+data['mvar26']+data['mvar25']+data['mvar24']
+data['CarSpend'] = data['mvar28']+data['mvar29']+data['mvar30']+data['mvar31']
+data['RetailSpend'] = data['mvar32']+data['mvar33']+data['mvar34']+data['mvar35']
+data['TotalSpend'] = data['mvar36']+data['mvar37']+data['mvar38']+data['mvar39']
+```
+```{r}
+data <- data[, ! names(data) %in% c("mvar16"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar17"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar18"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar19"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar20"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar21"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar22"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar23"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar24"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar25"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar26"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar27"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar28"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar29"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar30"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar31"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar32"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar33"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar34"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar35"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar36"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar37"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar38"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar39"), drop = FALSE]
+```
+```{r}
+data <- data[, ! names(data) %in% c("target"), drop = FALSE]
+bin <- data$targetBin 
+data <- data[, ! names(data) %in% c("targetBin"), drop = FALSE]
+data['targetBin'] <- bin
+```
+
+```{r}
+head(data)
+```
+
 
 ```{r}
 library(h2o)
@@ -160,8 +205,8 @@ test.hex<-as.h2o(test)
 regression_model_binary<-h2o.randomForest(
     training_frame =train.hex,
     validation_frame=test.hex,
-    x = -c(2,41),
-    y=42,
+    x=-c(2),
+    y=27,
     nfolds=10,
     seed =100,
     balance_classes= T,
@@ -176,10 +221,21 @@ leader <- read.csv('Dataset/Leaderboard_Dataset.csv')
 cm_key <- leader['cm_key']
 ```
 
+
 ```{r}
 leader <- leader[, ! names(leader) %in% c("mvar1"), drop = FALSE]
 leader <- leader[, ! names(leader) %in% c("cm_key"), drop = FALSE]
 ```
+
+Dropping retail spending (Score decreased to 30400 from 31000)
+
+```{r}
+leader <- leader[, ! names(leader) %in% c("mvar32"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar33"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar34"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar35"), drop = FALSE]
+```
+
 ```{r}
 leader$mvar2 <- as.factor(leader$mvar2)
 leader$mvar4 <- as.factor(leader$mvar4)
@@ -195,6 +251,46 @@ leader$mvar43 <- as.factor(leader$mvar43)
 leader$mvar44 <- as.factor(leader$mvar44)
 leader$mvar45 <- as.factor(leader$mvar45)
 ```
+
+```{r}
+leader['ElectronicsSpend'] = leader['mvar16']+leader['mvar17']+leader['mvar18']+leader['mvar19']
+leader['TravelSpend'] = leader['mvar20']+leader['mvar21']+leader['mvar22']+leader['mvar23']
+leader['HouseholdSpend'] = leader['mvar27']+leader['mvar26']+leader['mvar25']+leader['mvar24']
+leader['CarSpend'] = leader['mvar28']+leader['mvar29']+leader['mvar30']+leader['mvar31']
+leader['RetailSpend'] = leader['mvar32']+leader['mvar33']+leader['mvar34']+leader['mvar35']
+leader['TotalSpend'] = leader['mvar36']+leader['mvar37']+leader['mvar38']+leader['mvar39']
+```
+```{r}
+leader <- leader[, ! names(leader) %in% c("mvar16"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar17"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar18"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar19"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar20"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar21"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar22"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar23"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar24"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar25"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar26"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar27"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar28"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar29"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar30"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar31"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar32"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar33"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar34"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar35"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar36"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar37"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar38"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("mvar39"), drop = FALSE]
+```
+
+```{r}
+head(leader)
+```
+
 ```{r}
 leader.hex<-as.h2o(leader)
 ```
@@ -208,11 +304,11 @@ predictions_binary["cm_key"] <- cm_key
 predictions_binary
 ```
 ```{r}
-subset(predictions_binary, p1 > 0.244)
+subset(predictions_binary, p1 > 0.236)
 ```
 
 ```{r}
-predictions_binary <- subset(predictions_binary, p1 > 0.244)
+predictions_binary <- subset(predictions_binary, p1 > 0.236)
 ```
 ```{r}
 predictions_binary <- predictions_binary[with(predictions_binary, order(-p1)), ]
@@ -236,7 +332,13 @@ submission <- submission[1:1000,]
 submission
 ```
 ```{r}
-    write.table(submission,file = "Envible_VITVellore_15.csv",sep = ",",row.names = FALSE, col.names = FALSE)
+submission$card <- rep("Supp",nrow(submission))
+submission <- submission[, ! names(submission) %in% c("predict"), drop = FALSE]
+submission
+```
+
+```{r}
+    write.table(submission,file = "Envible_VITVellore_19.csv",sep = ",",row.names = FALSE, col.names = FALSE)
 
 ```
 
