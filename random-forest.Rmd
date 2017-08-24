@@ -150,7 +150,7 @@ test.hex<-as.h2o(test)
 regression_model_binary<-h2o.randomForest(
     training_frame =train.hex,
     validation_frame=test.hex,
-    x = -c(45),
+    x = -c(2,45),
     y=46,
     nfolds=10,
     seed =100,
@@ -198,8 +198,16 @@ predictions_binary["cm_key"] <- cm_key
 predictions_binary
 ```
 ```{r}
-predictions_binary <- subset(predictions_binary, p1 > 0.24)
+subset(predictions_binary, p1 > 0.244)
 ```
+
+```{r}
+predictions_binary <- subset(predictions_binary, p1 > 0.244)
+```
+```{r}
+predictions_binary <- predictions_binary[with(predictions_binary, order(-p1)), ]
+```
+
 
 ```{r}
 predictions_binary <- predictions_binary[, ! names(predictions_binary) %in% c("p0"), drop = FALSE]
@@ -218,7 +226,7 @@ submission <- submission[1:1000,]
 submission
 ```
 ```{r}
-    write.csv(submission,file = "Envible_VITVellore_10.csv",row.names = FALSE)
+    write.table(submission,file = "Envible_VITVellore_14.csv",sep = ",",row.names = FALSE, col.names = FALSE)
 
 ```
 
