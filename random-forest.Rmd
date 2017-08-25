@@ -142,12 +142,36 @@ data <- data[, ! names(data) %in% c("mvar37"), drop = FALSE]
 data <- data[, ! names(data) %in% c("mvar38"), drop = FALSE]
 data <- data[, ! names(data) %in% c("mvar39"), drop = FALSE]
 ```
+
+```{r}
+v1 <- data$mvar40 + data$mvar41 + data$mvar42
+v2 <- data$mvar43 + data$mvar44 + data$mvar45
+data$card <- rep(0,nrow(data))
+data$card[v1 > 0 & v2 == 0] <- 1
+data$card[v1 == 0 & v2 > 0] <- 2
+data$card[v1 > 0 & v2 > 0] <- 3
+length(data$card)
+```
+```{r}
+data <- data[, ! names(data) %in% c("mvar40"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar41"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar42"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar43"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar44"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar45"), drop = FALSE]
+```
+```{r}
+data$card
+```
+
 ```{r}
 data <- data[, ! names(data) %in% c("target"), drop = FALSE]
 bin <- data$targetBin 
 data <- data[, ! names(data) %in% c("targetBin"), drop = FALSE]
 data['targetBin'] <- bin
 ```
+
+
 
 ```{r}
 head(data)
@@ -170,12 +194,14 @@ data$mvar12 <- as.factor(data$mvar12)
 data$mvar13 <- as.factor(data$mvar13)
 data$mvar14 <- as.factor(data$mvar14)
 data$mvar15 <- as.factor(data$mvar15)
-data$mvar40 <- as.factor(data$mvar40)
-data$mvar41 <- as.factor(data$mvar41)
-data$mvar42 <- as.factor(data$mvar42)
-data$mvar43 <- as.factor(data$mvar43)
-data$mvar44 <- as.factor(data$mvar44)
-data$mvar45 <- as.factor(data$mvar45)
+# data$mvar40 <- as.factor(data$mvar40)
+# data$mvar41 <- as.factor(data$mvar41)
+# data$mvar42 <- as.factor(data$mvar42)
+# data$mvar43 <- as.factor(data$mvar43)
+# data$mvar44 <- as.factor(data$mvar44)
+# data$mvar45 <- as.factor(data$mvar45)
+data$card <- as.factor(data$card)
+data$targetBin <- as.factor(data$targetBin)
 ```
 ```{r}
 str(data)
@@ -209,8 +235,8 @@ test.hex<-as.h2o(test)
 regression_model_binary<-h2o.randomForest(
     training_frame =train.hex,
     validation_frame=test.hex,
-    x=-c(2),
-    y=27,
+    
+    y=22,
     nfolds=10,
     seed =100,
     balance_classes= T,
