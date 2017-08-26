@@ -1,0 +1,272 @@
+---
+title: "Analyze This 2017 - Envible"
+author: "Rohan Chopra"
+date: "August 2, 2017"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache=TRUE)
+```
+
+```{r}
+setwd("~/coding/Envible-VITVellore-AMAX-Analyze-This-2017")
+```
+
+```{r}
+data <- read.csv('Dataset/Training_Dataset.csv')
+```
+
+Dropping mvar1 and cm_key
+
+```{r}
+data <- data[, ! names(data) %in% c("mvar1"), drop = FALSE]
+data <- data[, ! names(data) %in% c("cm_key"), drop = FALSE]
+```
+
+```{r}
+data$target <- rep("None",nrow(data))
+data$target[data$mvar49==1] <- "Supp"
+data$target[data$mvar50==1] <- "Elite"
+data$target[data$mvar51==1] <- "Credit"
+length(data$target)
+```
+
+```{r}
+data$targetBin <- rep(0,nrow(data))
+data$targetBin[data$mvar49==1] <- 1
+data$targetBin[data$mvar50==1] <- 1
+data$targetBin[data$mvar51==1] <- 1
+length(data$targetBin)
+```
+
+
+
+```{r}
+data$target <- as.factor(data$target)
+data$targetBin <- as.factor(data$targetBin)
+```
+
+```{r}
+data <- data[, ! names(data) %in% c("mvar46"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar47"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar48"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar49"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar50"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar51"), drop = FALSE]
+```
+
+
+
+```{r}
+multi <- data$target 
+data <- data[, ! names(data) %in% c("target"), drop = FALSE]
+data['target'] <- multi
+bin <- data$targetBin 
+data <- data[, ! names(data) %in% c("targetBin"), drop = FALSE]
+data['targetBin'] <- bin
+```
+
+
+```{r}
+head(data)
+```
+
+```{r}
+data$mvar2 <- as.factor(data$mvar2)
+data$mvar4 <- as.factor(data$mvar4)
+data$mvar10 <- as.factor(data$mvar10)
+data$mvar12 <- as.factor(data$mvar12)
+data$mvar13 <- as.factor(data$mvar13)
+data$mvar14 <- as.factor(data$mvar14)
+data$mvar15 <- as.factor(data$mvar15)
+data$mvar40 <- as.factor(data$mvar40)
+data$mvar41 <- as.factor(data$mvar41)
+data$mvar42 <- as.factor(data$mvar42)
+data$mvar43 <- as.factor(data$mvar43)
+data$mvar44 <- as.factor(data$mvar44)
+data$mvar45 <- as.factor(data$mvar45)
+data$target <- as.factor(data$target)
+data$targetBin <- as.factor(data$targetBin)
+```
+```{r}
+str(data)
+```
+
+```{r , echo=FALSE}
+library(h2o)
+h2o.init(nthreads=-1,max_mem_size="3g",enable_assertions=FALSE)
+```
+
+```{r}
+set.seed(1)
+indexes = sample(1:nrow(data),size=0.2*nrow(data))
+test=data[indexes,]
+train=data[-indexes,]
+```
+```{r, echo=FALSE}
+train.hex<-as.h2o(train)
+test.hex<-as.h2o(test)
+```
+```{r}
+# regression_model<-h2o.randomForest(
+#     training_frame =train.hex,
+#     validation_frame=test.hex,
+#     x = -c(46),
+#     y=45,
+#     nfolds=10,
+#     seed =100,
+#     balance_classes= T,
+#     binomial_double_trees = T,
+#     ntrees = 150)
+# print(regression_model)
+```
+
+```{r}
+regression_model_binary<-h2o.gbm(
+        training_frame =train.hex,
+        validation_frame=test.hex,
+        x=-c(45),
+        y=46,
+        nfolds=10,
+        seed =100,
+        ntrees = 50)
+```
+
+```{r}
+print(regression_model_binary)
+```
+
+## Classify  card type
+
+```{r}
+card.data <- data[data$target != 'None',]
+head(card.data)
+str(card.data)
+```
+
+```{r}
+set.seed(1)
+indexes = sample(1:nrow(card.data),size=0.2*nrow(card.data))
+card.test=card.data[indexes,]
+card.train=card.data[-indexes,]
+```
+```{r, echo=FALSE}
+card.train.hex<-as.h2o(card.train)
+card.test.hex<-as.h2o(card.test)
+```
+```{r}
+regression_model_multi<-h2o.gbm(
+        training_frame =card.train.hex,
+        validation_frame=card.test.hex,
+        x=-c(46),
+        y=45,
+        nfolds=10,
+        seed =100,
+        ntrees = 50)
+```
+
+```{r}
+print(regression_model_multi)
+```
+
+```{r}
+leader <- read.csv('Dataset/Leaderboard_Dataset.csv')
+```
+```{r}
+cm_key <- leader['cm_key']
+```
+
+
+```{r}
+leader <- leader[, ! names(leader) %in% c("mvar1"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("cm_key"), drop = FALSE]
+```
+
+
+
+```{r}
+leader$mvar2 <- as.factor(leader$mvar2)
+leader$mvar4 <- as.factor(leader$mvar4)
+leader$mvar10 <- as.factor(leader$mvar10)
+leader$mvar12 <- as.factor(leader$mvar12)
+leader$mvar13 <- as.factor(leader$mvar13)
+leader$mvar14 <- as.factor(leader$mvar14)
+leader$mvar15 <- as.factor(leader$mvar15)
+leader$mvar40 <- as.factor(leader$mvar40)
+leader$mvar41 <- as.factor(leader$mvar41)
+leader$mvar42 <- as.factor(leader$mvar42)
+leader$mvar43 <- as.factor(leader$mvar43)
+leader$mvar44 <- as.factor(leader$mvar44)
+leader$mvar45 <- as.factor(leader$mvar45)
+```
+
+
+```{r}
+leader.hex<-as.h2o(leader)
+```
+```{r}
+predictions_binary <- as.data.frame(h2o.predict(regression_model_binary, leader.hex))
+```
+
+```{r}
+leader['predict'] <- predictions_binary['predict']
+leader['p1'] <- predictions_binary['p1']
+leader["cm_key"] <- cm_key
+```
+
+```{r}
+dim(subset(leader, p1 > 0.356))
+```
+
+```{r}
+leader <- subset(leader, p1 > 0.356)
+```
+```{r}
+leader <- leader[with(leader, order(-p1)), ]
+```
+
+
+
+```{r}
+cm_key_multi <- leader['cm_key']
+leader <- leader[, ! names(leader) %in% c("cm_key"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("p1"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("predict"), drop = FALSE]
+```
+```{r}
+leader
+```
+
+
+```{r}
+multi.leader.hex<-as.h2o(leader)
+```
+```{r}
+submission <- as.data.frame(h2o.predict(regression_model_multi, multi.leader.hex))
+```
+
+
+```{r}
+submission["cm_key"] <- cm_key_multi
+```
+
+```{r}
+submission <- submission[, ! names(submission) %in% c("Credit"), drop = FALSE]
+submission <- submission[, ! names(submission) %in% c("Elite"), drop = FALSE]
+submission <- submission[, ! names(submission) %in% c("Supp"), drop = FALSE]
+submission <- submission[c(2,1)]
+```
+```{r}
+head(submission)
+```
+
+
+```{r}
+    write.table(submission,file = "Envible_VITVellore_22.csv",sep = ",",row.names = FALSE, col.names = FALSE)
+
+```
+
