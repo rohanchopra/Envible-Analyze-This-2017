@@ -133,7 +133,21 @@ regression_model_binary<-h2o.gbm(
         y=46,
         nfolds=10,
         seed =100,
-        ntrees = 50)
+        #ntrees = 50,
+        
+        ntrees = 10000,                                                            
+  
+        learn_rate=0.01,                                                         
+        
+        stopping_rounds = 5, stopping_tolerance = 1e-4, stopping_metric = "AUC", 
+        
+        sample_rate = 0.8,                                                       
+      
+        col_sample_rate = 0.8,                                                   
+      
+        score_tree_interval = 10     
+        
+        )
 ```
 
 ```{r}
@@ -219,11 +233,11 @@ leader["cm_key"] <- cm_key
 ```
 
 ```{r}
-dim(subset(leader, p1 > 0.356))
+dim(subset(leader, p1 > 0.36155))
 ```
 
 ```{r}
-leader <- subset(leader, p1 > 0.356)
+leader <- subset(leader, p1 > 0.36155)
 ```
 ```{r}
 leader <- leader[with(leader, order(-p1)), ]
@@ -266,7 +280,6 @@ head(submission)
 
 
 ```{r}
-    write.table(submission,file = "Envible_VITVellore_22.csv",sep = ",",row.names = FALSE, col.names = FALSE)
-
+    write.table(submission,file = "Envible_VITVellore_23.csv",sep = ",",row.names = FALSE, col.names = FALSE)
 ```
 
