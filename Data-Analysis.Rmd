@@ -1,0 +1,154 @@
+---
+title: "Data Analysis"
+author: "Rohan Chopra"
+date: "August 24, 2017"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r}
+setwd("~/coding/Envible-VITVellore-AMAX-Analyze-This-2017")
+```
+
+```{r}
+data <- read.csv('Dataset/Training_Dataset.csv')
+```
+
+```{r}
+str(data)
+```
+
+```{r}
+summary(data)
+```
+
+
+Dropping mvar1 and cm_key
+
+```{r}
+data <- data[, ! names(data) %in% c("mvar1"), drop = FALSE]
+data <- data[, ! names(data) %in% c("cm_key"), drop = FALSE]
+```
+
+```{r}
+head(data)
+```
+
+Create target variables
+
+```{r}
+data$target <- rep("None",nrow(data))
+data$target[data$mvar49==1] <- "Supp"
+data$target[data$mvar50==1] <- "Elite"
+data$target[data$mvar51==1] <- "Credit"
+length(data$target)
+```
+```{r}
+num.na = sapply(data, function(x) sum(x==0))
+percent.na =  num.na * 100  / nrow(data)
+print("Percentage of NAs by columns: ")
+print(percent.na)
+```
+```{r}
+boxplot(data[,c(39,40,41,42,43,44)])
+```
+
+```{r}
+data$targetBin <- rep(0,nrow(data))
+data$targetBin[data$mvar49==1] <- 1
+data$targetBin[data$mvar50==1] <- 1
+data$targetBin[data$mvar51==1] <- 1
+length(data$targetBin)
+```
+
+```{r}
+data$target <- as.factor(data$target)
+data$targetBin <- as.factor(data$targetBin)
+```
+
+```{r}
+barplot(table(data$target))
+```
+```{r}
+barplot(table(data$targetBin))
+```
+
+```{r}
+data <- data[, ! names(data) %in% c("mvar46"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar47"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar48"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar49"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar50"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar51"), drop = FALSE]
+```
+
+```{r}
+data <- data[, ! names(data) %in% c("target"), drop = FALSE]
+```
+
+```{r}
+data$mvar12 <- as.numeric(data$mvar12)
+```
+```{r}
+data$targetBin <- as.numeric(data$targetBin)
+```
+
+## Feature selection
+
+```{r}
+library(mlbench)
+library(caret)
+```
+
+### Remove Redundant Features
+
+```{r}
+set.seed(7)
+correlationMatrix <- cor(data)
+head(correlationMatrix)
+```
+
+Find attributes that are highly corrected (ideally >0.75)
+```{r}
+highlyCorrelated <- findCorrelation(correlationMatrix, cutoff=0.75)
+head(data[highlyCorrelated])
+```
+
+### Rank Features By Importance
+
+Prepare training scheme
+```{r}
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+```
+```{r}
+data$targetBin <- as.factor(data$targetBin)
+```
+```{r}
+head(data)
+```
+```{r}
+data$targetBin <- as.factor(data$targetBin)
+str(data)
+```
+```{r}
+features <- data
+```
+
+Train the model
+```{r, eval=FALSE}
+model <- train(x = features[,1:44], y = features$targetBin, method="rf", preProcess="scale", trControl=control)
+```
+
+Estimate variable importance
+```{r, eval=FALSE}
+importance <- varImp(model, scale=FALSE)
+```
+
+Summarize importance
+```{r, eval=FALSE}
+print(importance)
+plot(importance)
+```
+

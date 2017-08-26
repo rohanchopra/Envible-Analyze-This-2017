@@ -1,0 +1,243 @@
+---
+title: "Analyze This 2017 - Envible"
+author: "Rohan Chopra"
+date: "August 22, 2017"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r}
+setwd("~/coding/Envible-VITVellore-AMAX-Analyze-This-2017")
+```
+
+```{r}
+data <- read.csv('Dataset/Training_Dataset.csv')
+```
+
+```{r}
+str(data)
+```
+```{r}
+str(as.factor(data$mvar45))
+```
+
+```{r}
+summary(data)
+```
+
+
+Dropping mvar1 and cm_key
+
+```{r}
+data <- data[, ! names(data) %in% c("mvar1"), drop = FALSE]
+data <- data[, ! names(data) %in% c("cm_key"), drop = FALSE]
+```
+
+```{r}
+head(data)
+```
+
+```{r}
+data$target <- rep("None",nrow(data))
+data$target[data$mvar49==1] <- "Supp"
+data$target[data$mvar50==1] <- "Elite"
+data$target[data$mvar51==1] <- "Credit"
+length(data$target)
+```
+```{r}
+num.na = sapply(data, function(x) sum(x==0))
+percent.na =  num.na * 100  / nrow(data)
+print("Percentage of NAs by columns: ")
+print(percent.na)
+```
+```{r}
+boxplot(data[,c(39,40,41,42,43,44)])
+```
+
+```{r}
+num.na = sapply(data, function(x) sum(x==0))
+percent.na =  num.na * 100  / nrow(data)
+print("Percentage of NAs by columns: ")
+print(percent.na)
+```
+
+```{r}
+data$targetBin <- rep(0,nrow(data))
+data$targetBin[data$mvar49==1] <- 1
+data$targetBin[data$mvar50==1] <- 1
+data$targetBin[data$mvar51==1] <- 1
+length(data$targetBin)
+```
+
+```{r}
+data$target <- as.factor(data$target)
+data$targetBin <- as.factor(data$targetBin)
+```
+
+```{r}
+barplot(table(data$target))
+```
+```{r}
+barplot(table(data$targetBin))
+```
+
+```{r}
+data <- data[, ! names(data) %in% c("mvar46"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar47"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar48"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar49"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar50"), drop = FALSE]
+data <- data[, ! names(data) %in% c("mvar51"), drop = FALSE]
+```
+```{r}
+head(data)
+```
+
+```{r}
+library(h2o)
+h2o.init(nthreads=-1,max_mem_size="3g",enable_assertions=FALSE)
+```
+```{r}
+str(data)
+```
+
+```{r}
+data$mvar2 <- as.factor(data$mvar2)
+data$mvar4 <- as.factor(data$mvar4)
+data$mvar10 <- as.factor(data$mvar10)
+data$mvar12 <- as.factor(data$mvar12)
+data$mvar13 <- as.factor(data$mvar13)
+data$mvar14 <- as.factor(data$mvar14)
+data$mvar15 <- as.factor(data$mvar15)
+data$mvar40 <- as.factor(data$mvar40)
+data$mvar41 <- as.factor(data$mvar41)
+data$mvar42 <- as.factor(data$mvar42)
+data$mvar43 <- as.factor(data$mvar43)
+data$mvar44 <- as.factor(data$mvar44)
+data$mvar45 <- as.factor(data$mvar45)
+```
+```{r}
+str(data)
+```
+
+```{r}
+set.seed(1)
+indexes = sample(1:nrow(data),size=0.2*nrow(data))
+test=data[indexes,]
+train=data[-indexes,]
+```
+```{r}
+train.hex<-as.h2o(train)
+test.hex<-as.h2o(test)
+```
+```{r}
+# regression_model<-h2o.randomForest(
+#     training_frame =train.hex,
+#     validation_frame=test.hex,
+#     x = -c(46),
+#     y=45,
+#     nfolds=10,
+#     seed =100,
+#     balance_classes= T,
+#     binomial_double_trees = T,
+#     ntrees = 150)
+# print(regression_model)
+```
+ 
+```{r}
+regression_model_binary<-h2o.deeplearning(
+        training_frame =train.hex,
+        validation_frame = test.hex,
+        hidden=c(70,70),
+        epochs=10.0,
+        activation="Maxout",
+        x = -c(45),
+        y=46,
+        seed = 100,
+        reproducible = T,
+        balance_classes= T,
+        fast_mode = F)
+print(regression_model_binary)
+```
+```{r}
+leader <- read.csv('Dataset/Leaderboard_Dataset.csv')
+```
+```{r}
+cm_key <- leader['cm_key']
+```
+
+```{r}
+leader <- leader[, ! names(leader) %in% c("mvar1"), drop = FALSE]
+leader <- leader[, ! names(leader) %in% c("cm_key"), drop = FALSE]
+```
+```{r}
+leader$mvar2 <- as.factor(leader$mvar2)
+leader$mvar4 <- as.factor(leader$mvar4)
+leader$mvar10 <- as.factor(leader$mvar10)
+leader$mvar12 <- as.factor(leader$mvar12)
+leader$mvar13 <- as.factor(leader$mvar13)
+leader$mvar14 <- as.factor(leader$mvar14)
+leader$mvar15 <- as.factor(leader$mvar15)
+leader$mvar40 <- as.factor(leader$mvar40)
+leader$mvar41 <- as.factor(leader$mvar41)
+leader$mvar42 <- as.factor(leader$mvar42)
+leader$mvar43 <- as.factor(leader$mvar43)
+leader$mvar44 <- as.factor(leader$mvar44)
+leader$mvar45 <- as.factor(leader$mvar45)
+```
+```{r}
+leader.hex<-as.h2o(leader)
+```
+```{r}
+predictions_binary <- as.data.frame(h2o.predict(regression_model_binary, leader.hex))
+```
+```{r}
+predictions_binary["cm_key"] <- cm_key
+```
+```{r}
+predictions_binary
+```
+```{r}
+(subset(predictions_binary, p1 > 0.34))
+```
+
+```{r}
+predictions_binary <- subset(predictions_binary, p1 > 0.34)
+```
+
+
+```{r}
+predictions_binary <- predictions_binary[, ! names(predictions_binary) %in% c("p0"), drop = FALSE]
+predictions_binary <- predictions_binary[, ! names(predictions_binary) %in% c("p1"), drop = FALSE]
+```
+```{r}
+predictions_binary <- predictions_binary[c(2,1)]
+```
+
+```{r}
+predictions_binary
+```
+
+
+```{r}
+submission <- subset(predictions_binary, predict == 1)
+```
+```{r}
+submission <- submission[1:1000,]
+submission
+```
+```{r}
+submission$card <- rep("Supp",nrow(submission))
+submission <- submission[, ! names(submission) %in% c("predict"), drop = FALSE]
+```
+```{r}
+submission
+```
+
+
+```{r}
+    write.table(submission,file = "Envible_VITVellore_13.csv",sep = ",",row.names = FALSE, col.names = FALSE)
+```
+
