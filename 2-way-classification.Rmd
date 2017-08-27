@@ -135,18 +135,17 @@ regression_model_binary<-h2o.gbm(
         seed =100,
         #ntrees = 50,
         
-        ntrees = 10000,                                                            
-  
-        learn_rate=0.01,                                                         
-        
-        stopping_rounds = 5, stopping_tolerance = 1e-4, stopping_metric = "AUC", 
-        
-        sample_rate = 0.8,                                                       
-      
-        col_sample_rate = 0.8,                                                   
-      
-        score_tree_interval = 10     
-        
+        ntrees = 1000,
+
+        learn_rate=0.01,
+
+        stopping_rounds = 5, stopping_tolerance = 1e-4, stopping_metric = "AUC",
+
+        sample_rate = 0.8,
+
+        col_sample_rate = 0.8,
+
+        score_tree_interval = 10
         )
 ```
 
@@ -161,6 +160,13 @@ card.data <- data[data$target != 'None',]
 head(card.data)
 str(card.data)
 ```
+```{r}
+card.data$mvar2 <- as.numeric(card.data$mvar2)
+card.data$mvar2[card.data$mvar2 > 6] <- 6
+card.data$mvar2 <- as.factor(card.data$mvar2)
+str(card.data)
+```
+
 
 ```{r}
 set.seed(1)
@@ -180,7 +186,21 @@ regression_model_multi<-h2o.gbm(
         y=45,
         nfolds=10,
         seed =100,
-        ntrees = 50)
+        #ntrees = 50
+        ntrees = 10000,                                                            
+  
+        learn_rate=0.01,                                                         
+        
+        stopping_rounds = 5, stopping_tolerance = 1e-4, stopping_metric = "logloss", 
+        
+        sample_rate = 0.8,                                                       
+      
+        col_sample_rate = 0.8,                                                   
+      
+        score_tree_interval = 10     
+        
+        
+        )
 ```
 
 ```{r}
@@ -227,6 +247,11 @@ predictions_binary <- as.data.frame(h2o.predict(regression_model_binary, leader.
 ```
 
 ```{r}
+predictions_binary[with(predictions_binary, order(-p1)), ]
+```
+
+
+```{r}
 leader['predict'] <- predictions_binary['predict']
 leader['p1'] <- predictions_binary['p1']
 leader["cm_key"] <- cm_key
@@ -269,6 +294,11 @@ submission["cm_key"] <- cm_key_multi
 ```
 
 ```{r}
+submission
+```
+
+
+```{r}
 submission <- submission[, ! names(submission) %in% c("Credit"), drop = FALSE]
 submission <- submission[, ! names(submission) %in% c("Elite"), drop = FALSE]
 submission <- submission[, ! names(submission) %in% c("Supp"), drop = FALSE]
@@ -278,8 +308,7 @@ submission <- submission[c(2,1)]
 head(submission)
 ```
 
-
 ```{r}
-    write.table(submission,file = "Envible_VITVellore_23.csv",sep = ",",row.names = FALSE, col.names = FALSE)
+    write.table(p,file = "Envible_VITVellore_28.csv",sep = ",",row.names = FALSE, col.names = FALSE)
 ```
 
