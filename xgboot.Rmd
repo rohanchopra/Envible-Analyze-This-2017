@@ -1,7 +1,7 @@
 ---
 title: "Analyze This 2017 - Envible"
 author: "Rohan Chopra"
-date: "August 2, 2017"
+date: "August 27, 2017"
 output:
   html_document: default
   pdf_document: default
@@ -60,44 +60,6 @@ data <- data[, ! names(data) %in% c("mvar51"), drop = FALSE]
 ```
 
 
-```{r}
-data$mvar40 <- as.numeric(data$mvar40)
-data$mvar41 <- as.numeric(data$mvar41)
-data$mvar42 <- as.numeric(data$mvar42)
-data$mvar43 <- as.numeric(data$mvar43)
-data$mvar44 <- as.numeric(data$mvar44)
-data$mvar45 <- as.numeric(data$mvar45)
-
-data$elite <- rep(0,nrow(data))
-data$supp <- rep(0,nrow(data))
-data$credit <- rep(0,nrow(data))
-
-data$supp[data$mvar40 > 0 & data$mvar43 == 0] <- 1
-data$supp[data$mvar40 == 0 & data$mvar43 > 0] <- 2
-data$supp[data$mvar40 > 0 & data$mvar43 > 0] <- 3
-
-data$elite[data$mvar41 > 0 & data$mvar44 == 0] <- 1
-data$elite[data$mvar41 == 0 & data$mvar44 > 0] <- 2
-data$elite[data$mvar41 > 0 & data$mvar44 > 0] <- 3
-
-data$credit[data$mvar42 > 0 & data$mvar45 == 0] <- 1
-data$credit[data$mvar42 == 0 & data$mvar45 > 0] <- 2
-data$credit[data$mvar42 > 0 & data$mvar45 > 0] <- 3
-
-data$supp <- as.factor(data$supp)
-data$elite <- as.factor(data$elite)
-data$credit <- as.factor(data$credit)
-
-str(data)
-```
-```{r}
-data <- data[, ! names(data) %in% c("mvar40"), drop = FALSE]
-data <- data[, ! names(data) %in% c("mvar41"), drop = FALSE]
-data <- data[, ! names(data) %in% c("mvar42"), drop = FALSE]
-data <- data[, ! names(data) %in% c("mvar43"), drop = FALSE]
-data <- data[, ! names(data) %in% c("mvar44"), drop = FALSE]
-data <- data[, ! names(data) %in% c("mvar45"), drop = FALSE]
-```
 
 
 ```{r}
@@ -167,31 +129,24 @@ test.hex<-as.h2o(test)
 ```
 
 ```{r}
-regression_model_binary<-h2o.gbm(
+regression_model_binary_gbm<-h2o.gbm(
         training_frame =train.hex,
         validation_frame=test.hex,
         x=-c(45),
         y=46,
-        nfolds=10,
         seed =100,
         #ntrees = 50,
-        
         ntrees = 1000,
-
         learn_rate=0.01,
-
         stopping_rounds = 5, stopping_tolerance = 1e-4, stopping_metric = "AUC",
-
         sample_rate = 0.8,
-
         col_sample_rate = 0.8,
-
         score_tree_interval = 10
         )
 ```
 
 ```{r}
-print(regression_model_binary)
+print(regression_model_binary_gbm)
 ```
 
 ## Classify  card type
@@ -199,10 +154,7 @@ print(regression_model_binary)
 ```{r}
 card.data <- data[data$target != 'None',]
 head(card.data)
-str(card.data)
 ```
-
-
 
 ```{r}
 set.seed(1)
@@ -214,25 +166,20 @@ card.train=card.data[-indexes,]
 card.train.hex<-as.h2o(card.train)
 card.test.hex<-as.h2o(card.test)
 ```
+
 ```{r}
-regression_model_multi<-h2o.gbm(
+regression_model_multi_gbm<-h2o.gbm(
         training_frame =card.train.hex,
         validation_frame=card.test.hex,
         x=-c(46),
         y=45,
-        nfolds=10,
         seed =100,
         #ntrees = 50
         ntrees = 10000,                                                            
-  
-        learn_rate=0.01,                                                         
-        
+        learn_rate=0.01,                                                   
         stopping_rounds = 5, stopping_tolerance = 1e-4, stopping_metric = "logloss", 
-        
-        sample_rate = 0.8,                                                       
-      
-        col_sample_rate = 0.8,                                                   
-      
+        sample_rate = 0.8,       
+        col_sample_rate = 0.8,       
         score_tree_interval = 10     
         
         
@@ -240,7 +187,28 @@ regression_model_multi<-h2o.gbm(
 ```
 
 ```{r}
-print(regression_model_multi)
+print(regression_model_multi_gbm)
+```
+
+```{r}
+regression_model_multi_xg<-h2o.xgboost(
+        training_frame =card.train.hex,
+        validation_frame=card.test.hex,
+        x=-c(46),
+        y=45,
+        seed =100,
+        ntrees = 10000,
+        learn_rate=0.01,
+        stopping_rounds = 5, stopping_tolerance = 1e-4,
+        stopping_metric = "logloss", 
+        sample_rate = 0.8,
+        col_sample_rate = 0.8,
+        score_tree_interval = 10
+)
+```
+
+```{r}
+print(regression_model_multi_xg)
 ```
 
 ```{r}
@@ -279,7 +247,7 @@ leader$mvar45 <- as.factor(leader$mvar45)
 leader.hex<-as.h2o(leader)
 ```
 ```{r}
-predictions_binary <- as.data.frame(h2o.predict(regression_model_binary, leader.hex))
+predictions_binary <- as.data.frame(h2o.predict(regression_model_binary_gbm, leader.hex))
 ```
 
 ```{r}
@@ -294,14 +262,17 @@ leader["cm_key"] <- cm_key
 ```
 
 ```{r}
-dim(subset(leader, p1 > 0.36155))
+dim(subset(leader, p1 > 0.3697))
 ```
 
 ```{r}
-leader <- subset(leader, p1 > 0.36155)
+leader <- subset(leader, p1 > 0.3697)
 ```
 ```{r}
 leader <- leader[with(leader, order(-p1)), ]
+```
+```{r}
+leader
 ```
 
 
@@ -320,7 +291,7 @@ leader
 multi.leader.hex<-as.h2o(leader)
 ```
 ```{r}
-submission <- as.data.frame(h2o.predict(regression_model_multi, multi.leader.hex))
+submission <- as.data.frame(h2o.predict(regression_model_multi_xg, multi.leader.hex))
 ```
 
 
@@ -340,110 +311,6 @@ head(submission)
 ```
 
 ```{r}
-    write.table(submission,file = "Envible_VITVellore_30.csv",sep = ",",row.names = FALSE, col.names = FALSE)
+    write.table(p,file = "Envible_VITVellore_29.csv",sep = ",",row.names = FALSE, col.names = FALSE)
 ```
 
-
-
-
-
-
-```{r}
-final <- read.csv('Dataset/Final_Dataset.csv')
-```
-```{r}
-cm_key <- final['cm_key']
-```
-
-
-```{r}
-final <- final[, ! names(final) %in% c("mvar1"), drop = FALSE]
-final <- final[, ! names(final) %in% c("cm_key"), drop = FALSE]
-```
-
-
-
-```{r}
-final$mvar2 <- as.factor(final$mvar2)
-final$mvar4 <- as.factor(final$mvar4)
-final$mvar10 <- as.factor(final$mvar10)
-final$mvar12 <- as.factor(final$mvar12)
-final$mvar13 <- as.factor(final$mvar13)
-final$mvar14 <- as.factor(final$mvar14)
-final$mvar15 <- as.factor(final$mvar15)
-final$mvar40 <- as.factor(final$mvar40)
-final$mvar41 <- as.factor(final$mvar41)
-final$mvar42 <- as.factor(final$mvar42)
-final$mvar43 <- as.factor(final$mvar43)
-final$mvar44 <- as.factor(final$mvar44)
-final$mvar45 <- as.factor(final$mvar45)
-```
-
-
-```{r}
-final.hex<-as.h2o(final)
-```
-```{r}
-predictions_binary <- as.data.frame(h2o.predict(regression_model_binary, final.hex))
-```
-
-```{r}
-predictions_binary[with(predictions_binary, order(-p1)), ]
-```
-
-
-```{r}
-final['predict'] <- predictions_binary['predict']
-final['p1'] <- predictions_binary['p1']
-final["cm_key"] <- cm_key
-```
-
-```{r}
-dim(subset(final, p1 > 0.36155))
-```
-
-```{r}
-final <- subset(final, p1 > 0.36155)
-```
-```{r}
-final <- final[with(final, order(-p1)), ]
-```
-
-
-
-```{r}
-cm_key_multi <- final['cm_key']
-final <- final[, ! names(final) %in% c("cm_key"), drop = FALSE]
-final <- final[, ! names(final) %in% c("p1"), drop = FALSE]
-final <- final[, ! names(final) %in% c("predict"), drop = FALSE]
-```
-```{r}
-leader
-```
-
-```{r}
-multi.final.hex<-as.h2o(final)
-```
-```{r}
-submission <- as.data.frame(h2o.predict(regression_model_multi, multi.leader.hex))
-```
-
-
-```{r}
-submission["cm_key"] <- cm_key_multi
-```
-
-
-```{r}
-submission <- submission[, ! names(submission) %in% c("Credit"), drop = FALSE]
-submission <- submission[, ! names(submission) %in% c("Elite"), drop = FALSE]
-submission <- submission[, ! names(submission) %in% c("Supp"), drop = FALSE]
-submission <- submission[c(2,1)]
-```
-```{r}
-head(submission)
-```
-
-```{r}
-    write.table(p,file = "Envible_VITVellore_30.csv",sep = ",",row.names = FALSE, col.names = FALSE)
-```
